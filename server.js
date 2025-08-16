@@ -2,7 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const path = require('path');
 const bodyParser = require('body-parser');
-const { pool, migrate } = require('./db');
+const { pool, migrate } = require('./db'); // ✅ Correct destructuring import
 
 dotenv.config();
 
@@ -32,12 +32,12 @@ async function runMigrations() {
   }
 }
 
-// Handle "--migrate" argument
+// Handle "--migrate" argument (only run migrations, no server)
 if (process.argv.includes('--migrate')) {
   (async () => {
     try {
       await runMigrations();
-      process.exit(0); // Exit after migration
+      process.exit(0); // exit after migrations
     } catch (e) {
       console.error('Migration failed', e);
       process.exit(1);
