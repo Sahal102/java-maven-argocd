@@ -1,5 +1,49 @@
-<% items.forEach(i => { %>
-  <div>
-    <p>Product ID: <%= i.product_id %> | Quantity: <%= i.quantity %></p>
-  </div>
-<% }) %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Cart</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <h1>Your Cart</h1>
+
+  <% if (!cart || cart.length === 0) { %>
+    <p>Your cart is empty.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Price</th>
+          <th>Total</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% let grandTotal = 0; %>
+        <% cart.forEach(item => { %>
+          <% let total = item.price * item.quantity; grandTotal += total; %>
+          <tr>
+            <td><%= item.name %></td>
+            <td><%= item.quantity %></td>
+            <td>$<%= item.price %></td>
+            <td>$<%= total.toFixed(2) %></td>
+            <td>
+              <form action="/cart/remove/<%= item.id %>" method="POST">
+                <button type="submit">Remove</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+        <tr>
+          <td colspan="3" style="text-align:right"><strong>Grand Total:</strong></td>
+          <td colspan="2"><strong>$<%= grandTotal.toFixed(2) %></strong></td>
+        </tr>
+      </tbody>
+    </table>
+    <a href="/orders/checkout"><button>Checkout</button></a>
+  <% } %>
+</body>
+</html>
