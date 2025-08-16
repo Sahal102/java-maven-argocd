@@ -2,17 +2,29 @@ const express = require('express');
 const dotenv = require('dotenv');
 const path = require('path');
 const bodyParser = require('body-parser');
-const { pool, migrate } = require('./db'); // ✅ Correct destructuring import
+const session = require('express-session');
+const { pool, migrate } = require('./db');
 
 dotenv.config();
 
 const app = express();
 
-// View engine + static files
+// View engine + static
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+// ✅ Session middleware (for cart)
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'change-me',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 } // 1 hour
+  })
+);
 
 // Routes
 app.use('/products', require('./routes/products'));
@@ -21,7 +33,7 @@ app.use('/orders', require('./routes/orders'));
 
 app.get('/', (req, res) => res.redirect('/products'));
 
-// Function to run migrations
+// Run migrations safely
 async function runMigrations() {
   const client = await pool.connect();
   try {
@@ -32,12 +44,12 @@ async function runMigrations() {
   }
 }
 
-// Handle "--migrate" argument (only run migrations, no server)
+// Handle "--migrate" argument
 if (process.argv.includes('--migrate')) {
   (async () => {
     try {
       await runMigrations();
-      process.exit(0); // exit after migrations
+      process.exit(0);
     } catch (e) {
       console.error('Migration failed', e);
       process.exit(1);
